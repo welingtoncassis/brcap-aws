@@ -11,6 +11,7 @@ exports.SNS_Post = function (snsURL, payload, subject, region, callback) {
         callback(err, data);
     });
 }
+
 exports.SQS_Get = function (queueURL, region, callback) {
     SQS_Get = new SQS(region);
 
