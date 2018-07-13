@@ -1,10 +1,12 @@
 var AWS = require("aws-sdk");
-
 var docClient;
 
 module.exports = class DynamoDB {
 
-    constructor() {
+    constructor(region) {
+        AWS.config.update({
+            region: region
+        })
         docClient = new AWS.DynamoDB.DocumentClient();
     }
 
