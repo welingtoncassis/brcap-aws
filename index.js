@@ -60,14 +60,14 @@ exports.Dynamo_Delete = function (tableName, keyName, key,region, callback) {
     });
 }
 
-exports.Dynamo_Get = function (tableName, nameKey, key, callback) {
+exports.Dynamo_Get = function (tableName, nameKey, key,region, callback) {
 
     new Dynamo(region).get(tableName, nameKey, key, function (err, data) {
         callback(err, data);
     });
 }
 
-exports.Dynamo_Put = function (tableName, item, callback) {
+exports.Dynamo_Put = function (tableName, item,region, callback) {
 
     new Dynamo(region).put(tableName, item, function (err, data) {
         callback(err, data);
