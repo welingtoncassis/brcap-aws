@@ -4,9 +4,7 @@ var docClient;
 module.exports = class DynamoDB {
 
     constructor(region) {
-        AWS.config.update({
-            region: region
-        })
+        AWS.config({region:region});
         docClient = new AWS.DynamoDB.DocumentClient();
     }
 
