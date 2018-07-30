@@ -1,6 +1,6 @@
 {
   "name": "brcap-aws",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "Projeto responsável por abstrair algumas funcionalidades da sdk aws, auxiliando equipes iniciantes na plataforma.",
   "main": "index.js",
   "scripts": {
