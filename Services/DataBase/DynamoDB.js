@@ -56,4 +56,20 @@ module.exports = class DynamoDB {
             }
         });
     }
+
+    getSortKey(tableName, keys, callback) {
+        var object = {
+            TableName: tableName,
+            Key: keys
+            
+        };
+
+        docClient.get(object, function (err, data) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, data.Item);
+            }
+        });
+    }
 }

@@ -73,3 +73,10 @@ exports.Dynamo_Put = function (tableName, item,region, callback) {
         callback(err, data);
     });
 }
+
+exports.Dynamo_getSortKey = function (tableName, keys, region, callback) {
+    
+    new Dynamo(region).getSortKey(tableName, keys, function (err, data) {
+        callback(err, data);
+    });
+}
