@@ -4,7 +4,7 @@ var docClient;
 module.exports = class DynamoDB {
 
     constructor(region) {
-        AWS.config({region:region});
+        AWS.config.update({region:region});
         docClient = new AWS.DynamoDB.DocumentClient();
     }
 
@@ -53,6 +53,22 @@ module.exports = class DynamoDB {
                 callback(err, null);
             } else {
                 callback(null, data);
+            }
+        });
+    }
+
+    getSortKey(tableName, keys, callback) {
+        var object = {
+            TableName: tableName,
+            Key: keys
+            
+        };
+
+        docClient.get(object, function (err, data) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, data.Item);
             }
         });
     }
