@@ -80,3 +80,10 @@ exports.Dynamo_getSortKey = function (tableName, keys, region, callback) {
         callback(err, data);
     });
 }
+
+exports.Dynamo_Query = function (object, region, callback) {
+        
+    new Dynamo(region).query( object, function (err, data) {
+        callback(err, data);
+    });
+}
