@@ -72,4 +72,15 @@ module.exports = class DynamoDB {
             }
         });
     }
+
+    update(params, callback) {
+
+        docClient.update(params, function (err, data) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, data.Item);
+            }
+        });
+    }
 }
