@@ -33,6 +33,8 @@ module.exports = class DynamoDB {
             }
         };
 
+        console.log(object);
+
         docClient.get(object, function (err, data) {
             if (err) {
                 callback(err, null);
@@ -57,6 +59,7 @@ module.exports = class DynamoDB {
         });
     }
 
+
     getSortKey(tableName, keys, callback) {
         var object = {
             TableName: tableName,
@@ -73,13 +76,24 @@ module.exports = class DynamoDB {
         });
     }
 
-    update(params, callback) {
+    update(object, callback) {
 
-        docClient.update(params, function (err, data) {
+        docClient.update(object, function (err, data) {
             if (err) {
                 callback(err, null);
             } else {
-                callback(null, data.Item);
+                callback(null, data);
+            }
+        });
+    }
+
+    query(object, callback) {
+
+        docClient.query(object, function (err, data) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, data);
             }
         });
     }

@@ -67,25 +67,30 @@ exports.Dynamo_Get = function (tableName, nameKey, key,region, callback) {
     });
 }
 
-exports.Dynamo_Put = function (tableName, item,region, callback) {
+exports.Dynamo_Put = function (tableName, item, region, callback) {
 
     new Dynamo(region).put(tableName, item, function (err, data) {
         callback(err, data);
     });
 }
 
-exports.Dynamo_getSortKey = function (tableName, keys,region, callback) {
+exports.Dynamo_getSortKey = function (tableName, keys, region, callback) {
     
     new Dynamo(region).getSortKey(tableName, keys, function (err, data) {
         callback(err, data);
     });
 }
 
-exports.update = function (tableName, params, region, callback) {
-
-    new Dynamo(region).update(params, function (err, data) {
+exports.Dynamo_Query = function (object, region, callback) {
+        
+    new Dynamo(region).query(object, function (err, data) {
         callback(err, data);
     });
 }
 
-
+exports.Dynamo_update = function (object, region, callback) {
+        
+    new Dynamo(region).update(object, function (err, data) {
+        callback(err, data);
+    });
+}
