@@ -8,14 +8,8 @@ module.exports = class DynamoDB {
         docClient = new AWS.DynamoDB.DocumentClient();
     }
 
-    delete(tableName, keyName, key, callback) {
-        var object = {
-            TableName: tableName,
-            Key: {
-                [keyName]: key
-            }
-        };
-
+    delete(object, callback) {
+       
         docClient.delete(object, function (err, data) {
             if (err) {
                 callback(err, null);

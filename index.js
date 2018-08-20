@@ -53,9 +53,9 @@ exports.S3_Get = function (bucket, key, callback) {
     });
 }
 
-exports.Dynamo_Delete = function (tableName, keyName, key,region, callback) {
+exports.Dynamo_Delete = function (object, region, callback) {
 
-    new Dynamo(region).delete(tableName, keyName, key, function (err, data) {
+    new Dynamo(region).delete(object, function (err, data) {
         callback(err, data);
     });
 }
