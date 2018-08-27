@@ -24,4 +24,13 @@ module.exports = class S3 {
             });
         }
     }
+
+    put(bucket, key, param, callback) {
+        const params = {
+            Bucket: bucket,
+            Key: key,
+            Body: JSON.stringify(param)
+        };
+        this.s3.putObject(params, (err, data) => callback(err, data));
+    }
 }
