@@ -53,7 +53,7 @@ exports.S3_Get = function (bucket, key, callback) {
     });
 }
 
-exports.S3_PUT = function (bucket, key, param, callback) {
+exports.S3_Put = function (bucket, key, param, callback) {
     new S3().put(bucket, key, param, function (err, data) {
         callback(err, data);
     });
