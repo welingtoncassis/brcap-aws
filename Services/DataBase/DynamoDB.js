@@ -91,4 +91,15 @@ module.exports = class DynamoDB {
             }
         });
     }
+
+    scan(object, callback) {
+
+        docClient.scan(object, function (err, data) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, data);
+            }
+        });
+    }
 }
