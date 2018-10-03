@@ -2,7 +2,12 @@
 var AWS = require('aws-sdk');
 var BRCAPAWS = require('../../index.js');
 
-var sqs;
+AWS.config.update({ region: "sa-east-1" });
+var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+
+const bucketQueueMonitor = "brasilcap-darwin-queue-monitor";
+const tableQueueMonitor = "darwin-queue-monitor";
+const tableQueueMonitorRegion = "sa-east-1";
 
 module.exports = class SQS {
 
@@ -27,39 +32,50 @@ module.exports = class SQS {
                 WaitTimeSeconds: 20
             };
 
-            this.sqs.receiveMessage(params, function (err, data) {
-                if (data && data.Messages) {
+            var params = {
+                QueueUrl: queueURL,
+                AttributeNames: ['All']
+            };
 
-                    let retorno = {};
-                    retorno.body = JSON.parse(JSON.parse(data.Messages[0].Body).Message);
-                    retorno.receiptHandle = data.Messages[0].ReceiptHandle;
-                    retorno.code = 200;
-                    retorno.message = 'message found';
-                    retorno.messageId = data.Messages[0].MessageId;
-                    retorno.subject = JSON.parse(data.Messages[0].Body).Subject;
-                    retorno.arn = JSON.parse(data.Messages[0].Body).TopicArn;
+            sqs.getQueueAttributes(params, function (err, queueData) {
+                if (err) {
+                    console.log(err, err.stack);
+                    callback(err, null);
+                } else {
+                    sqs.receiveMessage(params, function (err, data) {
+                        if (data && data.Messages) {
 
-                    let item = {
-                        'arn': JSON.parse(data.Messages[0].Body).TopicArn,
-                        'messageId': data.Messages[0].MessageId,
-                        'subject': JSON.parse(data.Messages[0].Body).Subject,
-                        'operation': 'R',
-                        'date': new Date().toISOString()
-                    };
+                            let retorno = {};
+                            retorno.body = JSON.parse(JSON.parse(data.Messages[0].Body).Message);
+                            retorno.receiptHandle = data.Messages[0].ReceiptHandle;
+                            retorno.code = 200;
+                            retorno.message = 'message found';
+                            retorno.messageId = data.Messages[0].MessageId;
+                            retorno.subject = JSON.parse(data.Messages[0].Body).Subject;
+                            retorno.arn = queueData.Attributes.QueueArn;
 
-                    BRCAPAWS.Dynamo_Put('darwin-queue-monitor', item, 'sa-east-1', function (err, dynamoData) {
-                        if (err) {
-                            console.log(err);
+                            let item = {
+                                'arn': queueData.Attributes.QueueArn,
+                                'messageId': data.Messages[0].MessageId,
+                                'subject': JSON.parse(data.Messages[0].Body).Subject,
+                                'operation': 'R',
+                                'date': new Date().toISOString()
+                            };
+
+                            BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    console.log(data);
+                                }
+                            });
+
+                            callback(err, retorno);
                         } else {
-                            console.log(data);
+                            callback(err, { 'code': 204, 'message': 'empty queue' });
                         }
                     });
-
-                    callback(err, retorno);
-                } else {
-                    callback(err, { 'code': 204, 'message': 'empty queue' });
                 }
-
             });
         }
     }
@@ -93,9 +109,9 @@ module.exports = class SQS {
             callback("queueURL missing or in a invalid state.", null);
         } else if (messageId === undefined) {
             callback("messageId missing or in a invalid state.", null);
-        }else if (subject === undefined) {
+        } else if (subject === undefined) {
             callback("subject missing or in a invalid state.", null);
-        }else if (arn === undefined) {
+        } else if (arn === undefined) {
             callback("arn missing or in a invalid state.", null);
         }
         else {
@@ -104,7 +120,7 @@ module.exports = class SQS {
                 ReceiptHandle: receiptHandle
             };
             this.sqs.deleteMessage(deleteParams, function (err, data) {
-                if (data){
+                if (data) {
                     let item = {
                         'arn': arn,
                         'messageId': messageId,
@@ -113,7 +129,7 @@ module.exports = class SQS {
                         'date': new Date().toISOString()
                     };
 
-                    BRCAPAWS.Dynamo_Put('darwin-queue-monitor', item, 'sa-east-1', function (err, dynamoData) {
+                    BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
                         if (err) {
                             console.log(err);
                         } else {
