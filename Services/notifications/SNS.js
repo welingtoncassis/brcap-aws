@@ -33,7 +33,8 @@ module.exports = class SNS {
                 TargetArn: snsURL,
                 Subject: subject,
             }, function (err, data) {
-                if (data) {
+                if (data) 
+                {
                     let item = {
                         'arn': snsURL,
                         'messageId': data.MessageId,

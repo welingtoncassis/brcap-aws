@@ -83,7 +83,7 @@ module.exports = class SQS {
         }
     }
 
-    delete(queueURL, receiptHandle, arn, messageId, subject, callback) {
+    deleteWithMonitor(queueURL, receiptHandle, arn, messageId, subject, callback) {
 
         //console.log('chamou apagar')
 

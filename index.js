@@ -25,9 +25,9 @@ exports.SQS_Delete = function (queueURL, receiptHandle, region, callback) {
     });
 }
 
-exports.SQS_Delete = function (queueURL, receiptHandle, arn, messageId, subject, region, callback) {
+exports.SQS_DeleteWithMonitor = function (queueURL, receiptHandle, arn, messageId, subject, region, callback) {
 
-    new SQS(region).delete(queueURL, receiptHandle, arn, messageId, subject, function (err, data) {
+    new SQS(region).deleteWithMonitor(queueURL, receiptHandle, arn, messageId, subject, function (err, data) {
         callback(err, data);
     });
 }
