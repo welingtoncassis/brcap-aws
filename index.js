@@ -5,14 +5,14 @@ var S3 = require('./Services/storage/S3');
 var Dynamo = require('./Services/DataBase/DynamoDB');
 
 exports.SNS_Post = function (snsURL, payload, subject, region, callback) {
-    
+
     new SNS(region).post(snsURL, payload, subject, function (err, data) {
         callback(err, data);
     });
 }
 
 exports.SQS_Get = function (queueURL, region, callback) {
-  
+
     new SQS(region).get(queueURL, function (err, data) {
         callback(err, data);
     });
@@ -21,6 +21,13 @@ exports.SQS_Get = function (queueURL, region, callback) {
 exports.SQS_Delete = function (queueURL, receiptHandle, region, callback) {
 
     new SQS(region).delete(queueURL, receiptHandle, function (err, data) {
+        callback(err, data);
+    });
+}
+
+exports.SQS_Delete = function (queueURL, receiptHandle, arn, messageId, subject, region, callback) {
+
+    new SQS(region).delete(queueURL, receiptHandle, arn, messageId, subject, function (err, data) {
         callback(err, data);
     });
 }
@@ -66,7 +73,7 @@ exports.Dynamo_Delete = function (object, region, callback) {
     });
 }
 
-exports.Dynamo_Get = function (tableName, nameKey, key,region, callback) {
+exports.Dynamo_Get = function (tableName, nameKey, key, region, callback) {
 
     new Dynamo(region).get(tableName, nameKey, key, function (err, data) {
         callback(err, data);
@@ -81,22 +88,29 @@ exports.Dynamo_Put = function (tableName, item, region, callback) {
 }
 
 exports.Dynamo_getSortKey = function (tableName, keys, region, callback) {
-    
+
     new Dynamo(region).getSortKey(tableName, keys, function (err, data) {
         callback(err, data);
     });
 }
 
 exports.Dynamo_Query = function (object, region, callback) {
-        
+
     new Dynamo(region).query(object, function (err, data) {
         callback(err, data);
     });
 }
 
 exports.Dynamo_update = function (object, region, callback) {
-        
+
     new Dynamo(region).update(object, function (err, data) {
+        callback(err, data);
+    });
+}
+
+exports.Dynamo_scan = function (object, region, callback) {
+
+    new Dynamo(region).scan(object, function (err, data) {
         callback(err, data);
     });
 }
