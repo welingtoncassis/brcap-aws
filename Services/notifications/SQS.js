@@ -72,12 +72,9 @@ module.exports = class SQS {
                                 'date': new Date().toISOString()
                             };
 
-                            console.log("ambiente type: ", os.type());
-                            console.log("ambiente release: ",os.release());
                             console.log("ambiente platform: ",os.platform());
-                            console.log("Verificando se está rodando local : ", os.hostname());
-
-                            if (os.type != 'linux') {
+                            
+                            if (os.platform() != 'linux') {
                                 BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
                                     if (err) {
                                         console.log(err);
