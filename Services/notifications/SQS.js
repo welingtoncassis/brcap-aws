@@ -1,19 +1,22 @@
 // Load the AWS SDK for Node.js
 var AWS = require('aws-sdk');
 var BRCAPAWS = require('../../index.js');
+var os = require('os');
 
-AWS.config.update({ region: "sa-east-1" });
-var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+var sqs;
 
 const bucketQueueMonitor = "brasilcap-darwin-queue-monitor";
 const tableQueueMonitor = "darwin-queue-monitor";
 const tableQueueMonitorRegion = "sa-east-1";
+const cacheHost = 'brasilcap-dev-001.i8cxyw.0001.sae1.cache.amazonaws.com';
+const cachePort = '6379';
+const cacheTTL = '5000';
 
 module.exports = class SQS {
 
     constructor(region) {
         AWS.config.update({ region: region });
-        this.sqs = new AWS.SQS({ apiVersion: '2012-11-05', httpOptions: { timeout: 25000 } });
+        sqs = new AWS.SQS({ apiVersion: '2012-11-05', httpOptions: { timeout: 25000 } });
     }
 
     get(queueURL, callback) {
@@ -38,12 +41,19 @@ module.exports = class SQS {
             };
 
             sqs.getQueueAttributes(params, function (err, queueData) {
+                
+                console.log(queueData);
+                
                 if (err) {
                     console.log(err, err.stack);
                     callback(err, null);
                 } else {
                     sqs.receiveMessage(params, function (err, data) {
+                        console.log(data);
+                        
                         if (data && data.Messages) {
+
+                            console.log("achei mensagem");
 
                             let retorno = {};
                             retorno.body = JSON.parse(JSON.parse(data.Messages[0].Body).Message);
@@ -62,15 +72,55 @@ module.exports = class SQS {
                                 'date': new Date().toISOString()
                             };
 
-                            BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
-                                if (err) {
-                                    console.log(err);
-                                } else {
-                                    console.log(data);
-                                }
-                            });
+                            console.log("ambiente type: ", os.type());
+                            console.log("ambiente release: ",os.release());
+                            console.log("ambiente platform: ",os.platform());
+                            console.log("Verificando se está rodando local : ", os.hostname());
 
-                            callback(err, retorno);
+                            if (os.type != 'linux') {
+                                BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        console.log(data);
+                                    }
+                                });
+
+                                callback(err, retorno);
+                            } else {
+                                //Verificar se existe informação no cache
+                                BRCAPAWS.Redis_Get(item.messageId, cacheHost, cachePort, function (err, cacheData) {
+                                    if (err) {
+                                        callback(err, { 'code': 400, 'message': 'problemas ao buscar informações do cache!' });
+                                    } else {
+
+                                        console.log("retorno do cache: ", cacheData);
+
+                                        if (cacheData) {
+                                            console.log("Mensagem já existente no cache!");
+                                            callback(err, { 'code': 204, 'message': 'empty queue' });
+                                        } else {
+                                            BRCAPAWS.Redis_Post(item.messageId, item, cacheTTL, cacheHost, cachePort, function(err, cachePostData){
+                                                if (err) {
+                                                    console.log(err);
+                                                } else {
+                                                    console.log(data);
+                                                }
+                                            });
+                                            
+                                            BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
+                                                if (err) {
+                                                    console.log(err);
+                                                } else {
+                                                    console.log(data);
+                                                }
+                                            });
+
+                                            callback(err, retorno);
+                                        }
+                                    }
+                                });
+                            }
                         } else {
                             callback(err, { 'code': 204, 'message': 'empty queue' });
                         }
@@ -93,7 +143,7 @@ module.exports = class SQS {
                 QueueUrl: queueURL,
                 ReceiptHandle: receiptHandle
             };
-            this.sqs.deleteMessage(deleteParams, function (err, data) {
+            sqs.deleteMessage(deleteParams, function (err, data) {
                 callback(err, data);
             });
         }
@@ -119,7 +169,7 @@ module.exports = class SQS {
                 QueueUrl: queueURL,
                 ReceiptHandle: receiptHandle
             };
-            this.sqs.deleteMessage(deleteParams, function (err, data) {
+            sqs.deleteMessage(deleteParams, function (err, data) {
                 if (data) {
                     let item = {
                         'arn': arn,
