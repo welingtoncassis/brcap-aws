@@ -41,16 +41,11 @@ module.exports = class SQS {
             };
 
             sqs.getQueueAttributes(params, function (err, queueData) {
-                
-                console.log(queueData);
-                
                 if (err) {
                     console.log(err, err.stack);
                     callback(err, null);
                 } else {
                     sqs.receiveMessage(params, function (err, data) {
-                        console.log(data);
-                        
                         if (data && data.Messages) {
 
                             console.log("achei mensagem");
@@ -73,7 +68,7 @@ module.exports = class SQS {
                             };
 
                             console.log("ambiente platform: ",os.platform());
-                            
+
                             if (os.platform() != 'linux') {
                                 BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
                                     if (err) {
@@ -97,7 +92,7 @@ module.exports = class SQS {
                                             console.log("Mensagem já existente no cache!");
                                             callback(err, { 'code': 204, 'message': 'empty queue' });
                                         } else {
-                                            BRCAPAWS.Redis_Post(item.messageId, item, cacheTTL, cacheHost, cachePort, function(err, cachePostData){
+                                            BRCAPAWS.Redis_Post(item.messageId, JSON.stringify(item), cacheTTL, cacheHost, cachePort, function(err, cachePostData){
                                                 if (err) {
                                                     console.log(err);
                                                 } else {
