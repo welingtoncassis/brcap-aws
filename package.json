@@ -21,6 +21,7 @@
   "homepage": "https://github.com/brasilcap/brcap-aws#readme",
   "dependencies": {
     "aws-sdk": "^2.224.1",
+    "forEachAsync": "^3.0.0",
     "redis": "^2.8.0",
     "redis-clustr": "^1.6.0"
   }

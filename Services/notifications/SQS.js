@@ -188,6 +188,7 @@ module.exports = class SQS {
     listQueues(queueNameSufix, callback) {
         var params = {};
         var retorno = [];
+        var count = 0;
         sqs.listQueues(params, function (err, listQueueData) {
             if (err) {
                 console.log(err, err.stack);
@@ -205,15 +206,22 @@ module.exports = class SQS {
                                 callback(err, retorno);
                             }
                             else {
-                                console.log(queueAttributesData.Attributes.QueueArn);
                                 retorno.push(queueAttributesData.Attributes.QueueArn);
+
+                                if (count == listQueueData.QueueUrls.length - 1) {
+                                    callback(err, retorno);
+                                }
+
+                                count++;
                             }
                         });
+                    } else {
+                        if (count == listQueueData.QueueUrls.length - 1) {
+                            callback(err, retorno);
+                        }
+                        count++;
                     }
-                }, function allDone() {
-                    console.log("All done");
-                    callback(err, retorno);
-                });
+                }, this);
             }
         });
     }
