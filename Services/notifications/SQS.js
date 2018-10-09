@@ -67,7 +67,7 @@ module.exports = class SQS {
                                 'date': new Date().toISOString()
                             };
 
-                            console.log("ambiente platform: ",os.platform());
+                            console.log("ambiente platform: ", os.platform());
 
                             if (os.platform() != 'linux') {
                                 BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
@@ -92,14 +92,14 @@ module.exports = class SQS {
                                             console.log("Mensagem já existente no cache!");
                                             callback(err, { 'code': 204, 'message': 'empty queue' });
                                         } else {
-                                            BRCAPAWS.Redis_Post(item.messageId, JSON.stringify(item), cacheTTL, cacheHost, cachePort, function(err, cachePostData){
+                                            BRCAPAWS.Redis_Post(item.messageId, JSON.stringify(item), cacheTTL, cacheHost, cachePort, function (err, cachePostData) {
                                                 if (err) {
                                                     console.log(err);
                                                 } else {
                                                     console.log(data);
                                                 }
                                             });
-                                            
+
                                             BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
                                                 if (err) {
                                                     console.log(err);
@@ -183,5 +183,38 @@ module.exports = class SQS {
                 callback(err, data);
             });
         }
+    }
+
+    listQueues(queueNameSufix, callback) {
+        var params = {};
+        var retorno = [];
+        sqs.listQueues(params, function (err, listQueueData) {
+            if (err) {
+                console.log(err, err.stack);
+            } else {
+
+                listQueueData.QueueUrls.forEach(function (element) {
+                    if (element.endsWith(queueNameSufix)) {
+                        var params = {
+                            QueueUrl: element,
+                            AttributeNames: ['QueueArn']
+                        };
+                        sqs.getQueueAttributes(params, function (err, queueAttributesData) {
+                            if (err) {
+                                console.log(err, err.stack);
+                                callback(err, retorno);
+                            }
+                            else {
+                                console.log(queueAttributesData.Attributes.QueueArn);
+                                retorno.push(queueAttributesData.Attributes.QueueArn);
+                            }
+                        });
+                    }
+                }, function allDone() {
+                    console.log("All done");
+                    callback(err, retorno);
+                });
+            }
+        });
     }
 }

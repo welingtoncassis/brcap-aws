@@ -32,6 +32,13 @@ exports.SQS_DeleteWithMonitor = function (queueURL, receiptHandle, arn, messageI
     });
 }
 
+exports.SQS_ListQueues = function (queueNamePrefix, region, callback) {
+
+    new SQS(region).listQueues(queueNamePrefix, function (err, data) {
+        callback(err, data);
+    });
+}
+
 exports.Redis_Get = function (key, host, port, callback) {
 
     new Redis(host, port).get(key, function (err, data) {
