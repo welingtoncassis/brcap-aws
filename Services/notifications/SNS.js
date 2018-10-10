@@ -26,7 +26,6 @@ module.exports = class SNS {
         } else {
             payload = JSON.stringify(payload);
 
-            console.log('sending message:', payload);
             this.sns.publish({
                 Message: payload,
                 MessageStructure: 'text',
@@ -37,10 +36,10 @@ module.exports = class SNS {
                 {
                     let item = {
                         'arn': snsURL,
+                        'date': new Date().toISOString(),
                         'messageId': data.MessageId,
-                        'subject': subject,
                         'operation': 'S',
-                        'date': new Date().toISOString()
+                        'subject': subject
                     };
 
                     BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
@@ -72,7 +71,7 @@ module.exports = class SNS {
                                                     console.log(err, err.stack);
                                                 }
                                                 else {
-                                                    console.log("fila notificada");
+                                                    console.log("BRCAP-AWS: dados gravados no dynamo.");
                                                 }
                                             });
                                         }
@@ -84,7 +83,7 @@ module.exports = class SNS {
                                 if (err) {
                                     console.log(err);
                                 } else {
-                                    console.log(s3Data);
+                                    console.log("BRCAP-AWS: dados gravados no S3.");
                                 }
                             });
                         }
