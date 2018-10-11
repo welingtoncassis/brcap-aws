@@ -48,21 +48,24 @@ module.exports = class SQS {
                     sqs.receiveMessage(params, function (err, data) {
                         if (data && data.Messages) {
 
+                            const Message = JSON.parse(JSON.parse(data.Messages[0].Body).Message);
+
                             let retorno = {};
-                            retorno.body = JSON.parse(JSON.parse(data.Messages[0].Body).Message);
+                            retorno.body = Message.BodyMessage;
                             retorno.receiptHandle = data.Messages[0].ReceiptHandle;
                             retorno.code = 200;
                             retorno.message = 'message found';
-                            retorno.messageId = data.Messages[0].MessageId;
+                            retorno.messageId = Message.QueueMonitorId;
                             retorno.subject = JSON.parse(data.Messages[0].Body).Subject;
                             retorno.arn = queueData.Attributes.QueueArn;
 
                             let item = {
                                 'arn': queueData.Attributes.QueueArn,
-                                'messageId': data.Messages[0].MessageId,
+                                'messageId': Message.QueueMonitorId,
                                 'subject': JSON.parse(data.Messages[0].Body).Subject,
                                 'operation': 'R',
-                                'date': new Date().toISOString()
+                                'date': new Date().toISOString().substr(0, 10) + "#" + Message.QueueMonitorId,
+                                'criacao': new Date().toISOString()
                             };
 
                             if (os.platform() != 'linux') {
@@ -71,10 +74,9 @@ module.exports = class SQS {
                                         console.log(err);
                                     } else {
                                         console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
+                                        callback(err, retorno);
                                     }
                                 });
-
-                                callback(err, retorno);
                             } else {
                                 //Verificar se existe informação no cache
                                 BRCAPAWS.Redis_Get(item.messageId, cacheHost, cachePort, function (err, cacheData) {
@@ -91,18 +93,16 @@ module.exports = class SQS {
                                                     console.log(err);
                                                 } else {
                                                     console.log("BRCAP-AWS: Dados salvos no cache.");
+                                                    BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
+                                                        if (err) {
+                                                            console.log(err);
+                                                        } else {
+                                                            console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
+                                                            callback(err, retorno);
+                                                        }
+                                                    });
                                                 }
                                             });
-
-                                            BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
-                                                if (err) {
-                                                    console.log(err);
-                                                } else {
-                                                    console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
-                                                }
-                                            });
-
-                                            callback(err, retorno);
                                         }
                                     }
                                 });
@@ -134,7 +134,7 @@ module.exports = class SQS {
     }
 
     deleteWithMonitor(queueURL, receiptHandle, arn, messageId, subject, callback) {
-        
+
         if (queueURL === undefined || queueURL === null || queueURL === '') {
             callback("queueURL missing or in a invalid state.", null);
         } else if (receiptHandle === undefined || receiptHandle === null || receiptHandle === '') {
@@ -158,19 +158,19 @@ module.exports = class SQS {
                         'messageId': messageId,
                         'subject': subject,
                         'operation': 'D',
-                        'date': new Date().toISOString()
+                        'date': new Date().toISOString().substr(0, 10) + "#" + messageId,
+                        'criacao': new Date().toISOString()
                     };
-
+                    
                     BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
                         if (err) {
                             console.log(err);
                         } else {
-                            console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
+                            console.log("BRCAP-AWS: Dados salvos no dynamo para delete.");
+                            callback(err, data);
                         }
                     });
                 }
-
-                callback(err, data);
             });
         }
     }

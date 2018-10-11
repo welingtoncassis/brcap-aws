@@ -24,10 +24,16 @@ module.exports = class SNS {
         } else if (subject === undefined || subject === null || subject === '') {
             callback("subject missing or in a invalid state.", null);
         } else {
-            payload = JSON.stringify(payload);
+
+            const randomId = Math.floor(new Date().valueOf() + Math.random());
+
+            const mensagem = {
+                'QueueMonitorId' : randomId,
+                'BodyMessage' : payload
+            }
 
             this.sns.publish({
-                Message: payload,
+                Message: JSON.stringify(mensagem),
                 MessageStructure: 'text',
                 TargetArn: snsURL,
                 Subject: subject,
@@ -36,10 +42,11 @@ module.exports = class SNS {
                 {
                     let item = {
                         'arn': snsURL,
-                        'date': new Date().toISOString(),
-                        'messageId': data.MessageId,
+                        'date': new Date().toISOString().substr(0,10)+"#"+randomId,
+                        'messageId': randomId,
                         'operation': 'S',
-                        'subject': subject
+                        'subject': subject,
+                        'criacao' : new Date().toISOString()
                     };
 
                     BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
@@ -60,10 +67,12 @@ module.exports = class SNS {
 
                                             let item = {
                                                 'arn': element.Endpoint,
-                                                'messageId': data.MessageId,
+                                                'messageId': randomId,
                                                 'subject': subject,
                                                 'operation': 'S',
-                                                'date': new Date().toISOString()
+                                                'date': new Date().toISOString().substr(0,10)+"#"+randomId,
+                                                'criacao' : new Date().toISOString()
+
                                             };
 
                                             BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
@@ -79,7 +88,7 @@ module.exports = class SNS {
                                     }, this);
                             });
 
-                            BRCAPAWS.S3_Put(bucketQueueMonitor, data.MessageId.toString(), payload, function (err, s3Data) {
+                            BRCAPAWS.S3_Put(bucketQueueMonitor, randomId.toString(), payload, function (err, s3Data) {
                                 if (err) {
                                     console.log(err);
                                 } else {
