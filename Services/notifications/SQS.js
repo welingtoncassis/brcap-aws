@@ -72,6 +72,7 @@ module.exports = class SQS {
                                 BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
                                     if (err) {
                                         console.log(err);
+                                        callback(err, retorno);
                                     } else {
                                         console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
                                         callback(err, retorno);
@@ -96,6 +97,7 @@ module.exports = class SQS {
                                                     BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
                                                         if (err) {
                                                             console.log(err);
+                                                            callback(err, retorno);
                                                         } else {
                                                             console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
                                                             callback(err, retorno);
@@ -165,6 +167,7 @@ module.exports = class SQS {
                     BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
                         if (err) {
                             console.log(err);
+                            callback(err, data);
                         } else {
                             console.log("BRCAP-AWS: Dados salvos no dynamo para delete.");
                             callback(err, data);
