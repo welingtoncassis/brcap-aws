@@ -43,7 +43,7 @@ module.exports = class SQS {
             sqs.getQueueAttributes(params, function (err, queueData) {
                 if (err) {
                     console.log(err, err.stack);
-                    callback(err, null);
+                    callback(null, retorno);
                 } else {
                     sqs.receiveMessage(params, function (err, data) {
                         if (data && data.Messages) {
@@ -68,47 +68,17 @@ module.exports = class SQS {
                                 'criacao': new Date().toISOString()
                             };
 
-                            if (os.platform() != 'linux') {
-                                BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
-                                    if (err) {
-                                        console.log(err);
-                                        callback(err, retorno);
-                                    } else {
-                                        console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
-                                        callback(err, retorno);
-                                    }
-                                });
-                            } else {
-                                //Verificar se existe informação no cache
-                                BRCAPAWS.Redis_Get(item.messageId, cacheHost, cachePort, function (err, cacheData) {
-                                    if (err) {
-                                        callback(err, { 'code': 400, 'message': 'problemas ao buscar informações do cache!' });
-                                    } else {
 
-                                        if (cacheData) {
-                                            console.log("BRCAP-AWS: Mensagem já existente no cache!");
-                                            callback(err, { 'code': 204, 'message': 'empty queue' });
-                                        } else {
-                                            BRCAPAWS.Redis_Post(item.messageId, JSON.stringify(item), cacheTTL, cacheHost, cachePort, function (err, cachePostData) {
-                                                if (err) {
-                                                    console.log(err);
-                                                } else {
-                                                    console.log("BRCAP-AWS: Dados salvos no cache.");
-                                                    BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
-                                                        if (err) {
-                                                            console.log(err);
-                                                            callback(err, retorno);
-                                                        } else {
-                                                            console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
-                                                            callback(err, retorno);
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }
-                                    }
-                                });
-                            }
+                            BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
+                                }
+
+                                callback(null, retorno);
+                            });
+
                         } else {
                             callback(err, { 'code': 204, 'message': 'empty queue' });
                         }
@@ -163,15 +133,15 @@ module.exports = class SQS {
                         'date': new Date().toISOString().substr(0, 10) + "#" + messageId,
                         'criacao': new Date().toISOString()
                     };
-                    
+
                     BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
                         if (err) {
                             console.log(err);
-                            callback(err, data);
                         } else {
                             console.log("BRCAP-AWS: Dados salvos no dynamo para delete.");
-                            callback(err, data);
                         }
+
+                        callback(null, data);
                     });
                 }
             });
