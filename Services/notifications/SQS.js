@@ -48,9 +48,9 @@ module.exports = class SQS {
                             const retorno = {};
                             const Message = JSON.parse(JSON.parse(data.Messages[0].Body).Message);
 
-                            if (Message.BodyMessage) {
+                            if (Message.QueueMonitorId) {
                                 
-                                retorno.body = Message.BodyMessage;
+                                retorno.body = Message;
                                 retorno.receiptHandle = data.Messages[0].ReceiptHandle;
                                 retorno.code = 200;
                                 retorno.message = 'message found';

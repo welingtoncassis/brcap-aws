@@ -27,13 +27,10 @@ module.exports = class SNS {
 
             const randomId = Math.floor(new Date().valueOf() + Math.random());
 
-            const mensagem = {
-                'QueueMonitorId' : randomId,
-                'BodyMessage' : payload
-            }
+            payload.QueueMonitorId = randomId;
 
             this.sns.publish({
-                Message: JSON.stringify(mensagem),
+                Message: JSON.stringify(payload),
                 MessageStructure: 'text',
                 TargetArn: snsURL,
                 Subject: subject,
