@@ -33,4 +33,8 @@ module.exports = class S3 {
         };
         this.s3.putObject(params, (err, data) => callback(err, data));
     }
+
+    putObject(params, callback) {
+       this.s3.putObject(params, (err, data) => callback(err, data));
+   }
 }

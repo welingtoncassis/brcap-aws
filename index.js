@@ -73,6 +73,12 @@ exports.S3_Put = function (bucket, key, param, callback) {
     });
 }
 
+exports.S3_PutObject = function (param, callback) {
+   new S3().putObject(param, function (err, data) {
+       callback(err, data);
+   });
+}
+
 exports.Dynamo_Delete = function (object, region, callback) {
 
     new Dynamo(region).delete(object, function (err, data) {

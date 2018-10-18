@@ -8,9 +8,6 @@ var sqs;
 const bucketQueueMonitor = "brasilcap-darwin-queue-monitor";
 const tableQueueMonitor = "darwin-queue-monitor";
 const tableQueueMonitorRegion = "sa-east-1";
-const cacheHost = 'brasilcap-dev-001.i8cxyw.0001.sae1.cache.amazonaws.com';
-const cachePort = '6379';
-const cacheTTL = '5000';
 
 module.exports = class SQS {
 
@@ -43,42 +40,50 @@ module.exports = class SQS {
             sqs.getQueueAttributes(params, function (err, queueData) {
                 if (err) {
                     console.log(err, err.stack);
-                    callback(null, retorno);
+                    callback(null, err.stack);
                 } else {
                     sqs.receiveMessage(params, function (err, data) {
                         if (data && data.Messages) {
 
+                            const retorno = {};
                             const Message = JSON.parse(JSON.parse(data.Messages[0].Body).Message);
 
-                            let retorno = {};
-                            retorno.body = Message.BodyMessage;
-                            retorno.receiptHandle = data.Messages[0].ReceiptHandle;
-                            retorno.code = 200;
-                            retorno.message = 'message found';
-                            retorno.messageId = Message.QueueMonitorId;
-                            retorno.subject = JSON.parse(data.Messages[0].Body).Subject;
-                            retorno.arn = queueData.Attributes.QueueArn;
+                            if (Message.BodyMessage) {
+                                
+                                retorno.body = Message.BodyMessage;
+                                retorno.receiptHandle = data.Messages[0].ReceiptHandle;
+                                retorno.code = 200;
+                                retorno.message = 'message found';
+                                retorno.messageId = Message.QueueMonitorId;
+                                retorno.subject = JSON.parse(data.Messages[0].Body).Subject;
+                                retorno.arn = queueData.Attributes.QueueArn;
 
-                            let item = {
-                                'arn': queueData.Attributes.QueueArn,
-                                'messageId': Message.QueueMonitorId,
-                                'subject': JSON.parse(data.Messages[0].Body).Subject,
-                                'operation': 'R',
-                                'date': new Date().toISOString().substr(0, 10) + "#" + Message.QueueMonitorId,
-                                'criacao': new Date().toISOString()
-                            };
+                                let item = {
+                                    'arn': queueData.Attributes.QueueArn,
+                                    'messageId': Message.QueueMonitorId,
+                                    'subject': JSON.parse(data.Messages[0].Body).Subject,
+                                    'operation': 'R',
+                                    'date': new Date().toISOString().substr(0, 10) + "#" + Message.QueueMonitorId,
+                                    'criacao': new Date().toISOString()
+                                };
 
+                                BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
+                                    if (err) {
+                                        console.log(err);
+                                    } else {
+                                        console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
+                                    }
 
-                            BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
-                                if (err) {
-                                    console.log(err);
-                                } else {
-                                    console.log("BRCAP-AWS: Dados salvos no dynamo na leitura.");
-                                }
+                                    callback(null, retorno);
+                                });
+                            } else {
+                                retorno.body = Message;
+                                retorno.receiptHandle = data.Messages[0].ReceiptHandle;
+                                retorno.code = 200;
+                                retorno.message = 'message found';
 
                                 callback(null, retorno);
-                            });
-
+                            }
                         } else {
                             callback(err, { 'code': 204, 'message': 'empty queue' });
                         }
