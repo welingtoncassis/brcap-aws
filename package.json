@@ -23,6 +23,7 @@
     "aws-sdk": "^2.224.1",
     "forEachAsync": "^3.0.0",
     "redis": "^2.8.0",
-    "redis-clustr": "^1.6.0"
+    "redis-clustr": "^1.6.0",
+    "tiny-json-http": "^7.0.0"
   }
 }
