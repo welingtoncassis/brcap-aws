@@ -22,7 +22,7 @@ module.exports = class SQS {
         } else {
             var params = {
                 AttributeNames: [
-                    "All"
+                    "SentTimestamp"
                 ],
                 MaxNumberOfMessages: 1,
                 MessageAttributeNames: [
@@ -32,7 +32,12 @@ module.exports = class SQS {
                 WaitTimeSeconds: 20
             };
 
-            sqs.getQueueAttributes(params, function (err, queueData) {
+            var paramsForAttributes = {
+                QueueUrl: queueURL,
+                AttributeNames: ['All']
+            };
+
+            sqs.getQueueAttributes(paramsForAttributes, function (err, queueData) {
                 if (err) {
                     console.log(err, err.stack);
                     callback(null, err.stack);
