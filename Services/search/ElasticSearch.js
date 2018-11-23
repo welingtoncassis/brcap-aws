@@ -20,7 +20,7 @@ const putIndex = ({ index, host, data }) =>
 
 //Delete Index in Elastic Search
 const deleteIndex = ({ index, host }) =>
-  tiny.delete({
+  tiny.del({
     url: `${host}/${index}`
   });
 
