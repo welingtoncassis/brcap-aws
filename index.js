@@ -96,6 +96,12 @@ exports.S3_PutObject = function(param, callback) {
   });
 };
 
+exports.S3_DeleteObject = function (bucket, pathFileName, callback) {
+  new S3().delete(bucket, pathFileName, function (err, data) {
+    callback(err, data);
+  });
+};
+
 exports.Dynamo_Delete = function(object, region, callback) {
   new Dynamo(region).delete(object, function(err, data) {
     callback(err, data);
