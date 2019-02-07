@@ -138,6 +138,12 @@ exports.Dynamo_scan = function(object, region, callback) {
   });
 };
 
+exports.Dynamo_batchWrite = function(object, region, callback) {
+  new Dynamo(region).batchWrite(object, function(err, data) {
+    callback(err, data);
+  });
+};
+
 // ElasticSearch
 exports.ES_getIndex = params => getIndex(params);
 exports.ES_getAllIndex = params => getIndex(params);

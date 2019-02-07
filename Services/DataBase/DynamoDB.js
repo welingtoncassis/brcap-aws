@@ -102,4 +102,15 @@ module.exports = class DynamoDB {
             }
         });
     }
+
+    batchWrite(object, callback) {
+
+        docClient.batchWrite(object, function (err, data) {
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, data);
+            }
+        });
+    }
 }
