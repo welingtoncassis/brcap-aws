@@ -43,6 +43,6 @@ module.exports = class S3 {
             Bucket: bucket,
             Key: pathFileName,
         };
-        this.s3.delete(params, (err, data) => callback(err, data));
+        this.s3.deleteObject(params, (err, data) => callback(err, data));
     }
 }
