@@ -5,7 +5,7 @@ const properties = {
     'valor' : 'teste'
 }
 
-BRCAPAWS.Kms_encrypt('7b4244f7-664e-4b52-812d-f23200d47ded', 'sa-east-1', JSON.stringify(properties), function(err, data){
+BRCAPAWS.Kms_encrypt('keyid', 'sa-east-1', JSON.stringify(properties), function(err, data){
     
     console.log('cifrando: ',JSON.stringify(properties));   
     
