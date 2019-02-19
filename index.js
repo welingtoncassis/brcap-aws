@@ -3,6 +3,7 @@ var SQS = require("./Services/notifications/SQS");
 var Redis = require("./Services/cache/Redis");
 var S3 = require("./Services/storage/S3");
 var Dynamo = require("./Services/DataBase/DynamoDB");
+var KMS = require("./Services/secret/Kms");
 
 const {
   getIndex,
@@ -149,6 +150,19 @@ exports.Dynamo_batchWrite = function(object, region, callback) {
     callback(err, data);
   });
 };
+
+exports.Kms_encrypt = function(KeyId, region, Plaintext, callback) {
+  new KMS(region).encrypt(KeyId, Plaintext, function(err, data) {
+    callback(err, data);
+  });
+};
+
+exports.Kms_decrypt = function(params, region, callback) {
+  new KMS(region).decrypt(params, function(err, data) {
+    callback(err, data);
+  });
+};
+
 
 // ElasticSearch
 exports.ES_getIndex = params => getIndex(params);
