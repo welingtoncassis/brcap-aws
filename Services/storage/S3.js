@@ -45,4 +45,11 @@ module.exports = class S3 {
         };
         this.s3.deleteObject(params, (err, data) => callback(err, data));
     }
+
+    listObjects(bucket, directory, callback) {
+        this.s3.listObjectsV2({
+            Bucket: bucket,
+            Prefix: directory,
+        }, callback);
+    }
 }
