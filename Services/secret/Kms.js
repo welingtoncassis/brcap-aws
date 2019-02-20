@@ -1,6 +1,4 @@
-// Load the AWS SDK for Node.js
 var AWS = require('aws-sdk');
-
 var kms;
 
 module.exports = class KMS {
