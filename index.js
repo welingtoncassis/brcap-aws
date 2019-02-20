@@ -103,6 +103,10 @@ exports.S3_DeleteObject = function (bucket, pathFileName, callback) {
   });
 };
 
+exports.S3_ListObjects = function (bucket, directory, callback) {
+  new S3().listObjects(bucket, directory, callback);
+};
+
 exports.Dynamo_Delete = function(object, region, callback) {
   new Dynamo(region).delete(object, function(err, data) {
     callback(err, data);
