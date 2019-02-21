@@ -98,7 +98,7 @@ exports.S3_PutObject = function(param, callback) {
 };
 
 exports.S3_Upload = function(param, callback) {
-  new S3().putObject(param, callback);
+  new S3().upload(param, callback);
 };
 
 exports.S3_DeleteObject = function (bucket, pathFileName, callback) {
