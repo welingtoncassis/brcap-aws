@@ -38,6 +38,10 @@ module.exports = class S3 {
         this.s3.putObject(params, (err, data) => callback(err, data));
     }
 
+    upload(params, callback) {
+        this.s3.upload(params, (err, data) => callback(err, data));
+    }
+
     delete(bucket, pathFileName, callback) {
         const params = {
             Bucket: bucket,
