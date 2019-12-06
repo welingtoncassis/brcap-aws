@@ -38,7 +38,7 @@ module.exports = class SNS {
             }, function (err, data) {
                 if (data) {
 
-                    const path = snsURL +"/"+now.getFullYear() +"-"+now.getMonth()+"-"+now.getDay()+"/"+now.getHours()+":"+now.getMinutes()+":"+now.getSeconds()+" - "
+                    const path = snsURL +"/"+now.getFullYear() +"-"+parseInt(now.getMonth()+1)+"-"+now.getDate()+"/"+now.getHours()+":"+now.getMinutes()+":"+now.getSeconds()+" - "
 
                     BRCAPAWS.S3_Put(bucketQueueMonitor, path+randomId.toString(), payload, function (err, s3Data) {
                         if (err) {
