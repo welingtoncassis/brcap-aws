@@ -24,7 +24,9 @@ module.exports = class SNS {
         } else {
 
             const now = new Date()
-            const randomId = Math.floor(new Date().valueOf() + (Math.random() * Math.random()));
+            const randomId = (Date.now().toString(36) + Math.random().toString(36).substr(2, 5)).toUpperCase();
+
+            console.log(Date.now().toString(36))
 
             payload.QueueMonitorId = randomId;
 
@@ -36,7 +38,7 @@ module.exports = class SNS {
             }, function (err, data) {
                 if (data) {
 
-                    const path = snsURL +"/"+now.getFullYear() +"-"+now.getMonth()+"-"+now.getDay()+"/"+now.getHours()+":"+now.getMinutes()+":"+now.getSeconds()+"/"
+                    const path = snsURL +"/"+now.getFullYear() +"-"+now.getMonth()+"-"+now.getDay()+"/"+now.getHours()+":"+now.getMinutes()+":"+now.getSeconds()+" - "
 
                     BRCAPAWS.S3_Put(bucketQueueMonitor, path+randomId.toString(), payload, function (err, s3Data) {
                         if (err) {
