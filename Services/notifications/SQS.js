@@ -49,7 +49,7 @@ module.exports = class SQS {
                             const Message = JSON.parse(JSON.parse(data.Messages[0].Body).Message);
 
                             if (Message.QueueMonitorId) {
-                                
+
                                 retorno.body = Message;
                                 retorno.receiptHandle = data.Messages[0].ReceiptHandle;
                                 retorno.code = 200;
@@ -129,26 +129,7 @@ module.exports = class SQS {
                 ReceiptHandle: receiptHandle
             };
             sqs.deleteMessage(deleteParams, function (err, data) {
-                if (data) {
-                    let item = {
-                        'arn': arn,
-                        'messageId': messageId,
-                        'subject': subject,
-                        'operation': 'D',
-                        'date': new Date().toISOString().substr(0, 10) + "#" + messageId,
-                        'criacao': new Date().toISOString()
-                    };
-
-                    BRCAPAWS.Dynamo_Put(tableQueueMonitor, item, tableQueueMonitorRegion, function (err, dynamoData) {
-                        if (err) {
-                            console.log(err);
-                        } else {
-                            console.log("BRCAP-AWS: Dados salvos no dynamo para delete.");
-                        }
-
-                        callback(null, data);
-                    });
-                }
+                callback(err, data);
             });
         }
     }
