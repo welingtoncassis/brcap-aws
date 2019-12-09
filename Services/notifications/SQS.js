@@ -38,36 +38,41 @@ module.exports = class SQS {
                 } else {
                     try {
                         sqs.receiveMessage(params, function (err, data) {
-                            if (data && data.Messages) {
-                                const retorno = {};
-                                const Message = JSON.parse(JSON.parse(data.Messages[0].Body).Message);
-
-                                if (Message.QueueMonitorId) {
-
-                                    retorno.body = Message;
-                                    retorno.receiptHandle = data.Messages[0].ReceiptHandle;
-                                    retorno.code = 200;
-                                    retorno.message = 'message found';
-                                    retorno.messageId = Message.QueueMonitorId;
-                                    retorno.subject = JSON.parse(data.Messages[0].Body).Subject;
-                                    retorno.arn = queueData.Attributes.QueueArn;
-
-                                    callback(null, retorno);
+                            try {
+                                if (data && data.Messages) {
+                                    const retorno = {};
+                                    const Message = JSON.parse(JSON.parse(data.Messages[0].Body).Message);
+    
+                                    if (Message.QueueMonitorId) {
+    
+                                        retorno.body = Message;
+                                        retorno.receiptHandle = data.Messages[0].ReceiptHandle;
+                                        retorno.code = 200;
+                                        retorno.message = 'message found';
+                                        retorno.messageId = Message.QueueMonitorId;
+                                        retorno.subject = JSON.parse(data.Messages[0].Body).Subject;
+                                        retorno.arn = queueData.Attributes.QueueArn;
+    
+                                        callback(null, retorno);
+                                    } else {
+                                        retorno.body = Message;
+                                        retorno.receiptHandle = data.Messages[0].ReceiptHandle;
+                                        retorno.code = 200;
+                                        retorno.message = 'message found';
+    
+                                        callback(null, retorno);
+                                    }
                                 } else {
-                                    retorno.body = Message;
-                                    retorno.receiptHandle = data.Messages[0].ReceiptHandle;
-                                    retorno.code = 200;
-                                    retorno.message = 'message found';
-
-                                    callback(null, retorno);
+                                    callback(err, { 'code': 204, 'message': 'empty queue' });
                                 }
-                            } else {
-                                callback(err, { 'code': 204, 'message': 'empty queue' });
+                            } catch (error) {
+                                callback({ 'code': 400, 'message': 'Mensagem inválida', 'error': error }, { 'code': 400 });
                             }
+                       
                         });
 
                     } catch (error) {
-                        callback(error, null);
+                        callback(error, { 'code': 400, 'message': 'Mensagem inválida', 'error': error });
                     }
                 }
             });
