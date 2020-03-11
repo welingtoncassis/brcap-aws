@@ -1,6 +1,6 @@
 {
   "name": "brcap-aws",
-  "version": "1.8.33",
+  "version": "1.8.34",
   "description": "Projeto responsável por abstrair algumas funcionalidades da sdk aws, auxiliando equipes iniciantes na plataforma.",
   "main": "index.js",
   "scripts": {
@@ -22,8 +22,11 @@
   "dependencies": {
     "aws-sdk": "2.176.0",
     "forEachAsync": "^3.0.0",
+    "node-persist": "^3.0.5",
+    "object.fromentries": "^2.0.2",
     "redis": "^2.8.0",
     "redis-clustr": "^1.6.0",
-    "tiny-json-http": "^7.0.0"
+    "tiny-json-http": "^7.0.0",
+    "uuid": "^7.0.2"
   }
 }
