@@ -38,9 +38,9 @@ module.exports = class SNS {
             }, function (err, data) {
                 if (data) {
 
-                    const path = snsURL +"/"+now.getFullYear() +"-"+parseInt(now.getMonth()+1)+"-"+now.getDate()+"/"+now.getHours()+":"+now.getMinutes()+":"+now.getSeconds()+" - "
+                    const path = snsURL + "/" + now.getFullYear() + "-" + parseInt(now.getMonth() + 1) + "-" + now.getDate() + "/" + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + " - "
 
-                    BRCAPAWS.S3_Put(bucketQueueMonitor, path+randomId.toString(), payload, function (err, s3Data) {
+                    BRCAPAWS.S3_Put(bucketQueueMonitor, path + randomId.toString(), payload, function (err, s3Data) {
                         if (err) {
                             console.log(err);
                         } else {
@@ -52,5 +52,28 @@ module.exports = class SNS {
                 callback(err, data);
             });
         }
+    }
+
+    listSubscriptionsByTopic(snsURL, callback) {
+        let params = {
+            'TopicArn': snsURL
+        };
+
+        let items = [];
+
+        this.sns.listSubscriptionsByTopic(params, function (err, listSubscriptionData) {
+            if (err)
+                console.log(err, err.stack);
+            else
+                listSubscriptionData.Subscriptions.forEach(function (element) {
+                    if (element.Protocol == 'sqs') {
+                        let item = {
+                            'arn': element.Endpoint
+                        };
+                        items.push(item.arn);
+                    }
+                }, this);
+            callback(err, items);
+        });
     }
 }
