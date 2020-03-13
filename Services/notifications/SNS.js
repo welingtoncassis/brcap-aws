@@ -26,8 +26,6 @@ module.exports = class SNS {
             const now = new Date()
             const randomId = Math.floor(new Date().valueOf() + (Math.random() * Math.random()));
 
-            console.log(Date.now().toString(36))
-
             payload.QueueMonitorId = randomId;
 
             this.sns.publish({
@@ -43,8 +41,6 @@ module.exports = class SNS {
                     BRCAPAWS.S3_Put(bucketQueueMonitor, path + randomId.toString(), payload, function (err, s3Data) {
                         if (err) {
                             console.log(err);
-                        } else {
-                            console.log("BRCAP-AWS: dados gravados no S3.");
                         }
                     });
                 }
