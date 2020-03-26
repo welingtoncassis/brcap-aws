@@ -1,53 +1,80 @@
-// Load the AWS SDK for Node.js
-var AWS = require('aws-sdk');
-var BRCAPAWS = require('../../index.js');
+const AWS = require('aws-sdk');
 
-var sns;
+const RetrySNS = require('./RetrySNS');
+const S3 = require('../storage/S3');
+const { isInvalidInput, to } = require('../../utils');
+
+const sns = new AWS.SNS({ 
+    apiVersion: '2012-11-05', 
+    httpOptions: { timeout: 25000 },
+    region: 'sa-east-1',
+    correctClockSkew: true,
+})
+const retry = new RetrySNS({ sns, logging: true });
 
 const bucketQueueMonitor = "brasilcap-sns-history-notification";
 
 module.exports = class SNS {
 
     constructor(region) {
-        AWS.config.update({ region: region });
-        this.sns = new AWS.SNS({ apiVersion: '2012-11-05', httpOptions: { timeout: 25000 } });
+        if(region && sns.config.region !== region)  {
+            sns.config.update({ region });
+        } 
+        this.sns = sns;
     }
 
-    post(snsURL, payload, subject, callback) {
-
-        if (payload === undefined || payload === null || payload === '') {
-            callback("payload missing or in a invalid state.", null);
-        } else if (snsURL === undefined || snsURL === null || snsURL === '') {
-            callback("snsURL missing or in a invalid state.", null);
-        } else if (subject === undefined || subject === null || subject === '') {
-            callback("subject missing or in a invalid state.", null);
-        } else {
-
-            const now = new Date()
-            const randomId = Math.floor(new Date().valueOf() + (Math.random() * Math.random()));
-
-            payload.QueueMonitorId = randomId;
-
-            this.sns.publish({
-                Message: JSON.stringify(payload),
-                MessageStructure: 'text',
-                TargetArn: snsURL,
-                Subject: subject,
-            }, function (err, data) {
-                if (data) {
-
-                    const path = snsURL + "/" + now.getFullYear() + "-" + parseInt(now.getMonth() + 1) + "-" + now.getDate() + "/" + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + " - "
-
-                    BRCAPAWS.S3_Put(bucketQueueMonitor, path + randomId.toString(), payload, function (err, s3Data) {
-                        if (err) {
-                            console.log(err);
-                        }
-                    });
-                }
-
-                callback(err, data);
-            });
+    async post(snsURL, payload, subject) {
+        if(isInvalidInput([snsURL, payload, subject])) {
+            return Promise.reject("Required sns post(snsUrl or Payload or subject) input is missing or in a invalid state.")
         }
+
+        const now = new Date()
+        const randomId = Math.floor(new Date().valueOf() + (Math.random() * Math.random()));
+        payload.QueueMonitorId = randomId;
+        const params = {
+            "Message": JSON.stringify(payload),
+            "MessageStructure": 'text',
+            "TargetArn": snsURL,
+            "Subject": subject,
+        }
+        const [error, data] =  await to(this.sns.publish(params).promise());
+
+        if(error) {
+            
+            return retry.saveError(params)
+        }
+
+        const path = snsURL +"/"+now.getFullYear() +"-"+parseInt(now.getMonth()+1)+"-"+now.getDate()+"/"+now.getHours()+":"+now.getMinutes()+":"+now.getSeconds()+" - "
+
+        await new S3().put(
+            bucketQueueMonitor, 
+            path+randomId.toString(), 
+            payload,
+        );
+        console.log("BRCAP-AWS: dados gravados no S3.");
+    }
+
+    listSubscriptionsByTopic(snsURL, callback) {
+        let params = {
+            'TopicArn': snsURL
+        };
+
+        let items = [];
+
+        this.sns.listSubscriptionsByTopic(params, function (err, listSubscriptionData) {
+            if (err)
+                console.log(err, err.stack);
+            else
+                listSubscriptionData.Subscriptions.forEach(function (element) {
+                    if (element.Protocol == 'sqs') {
+                        let item = {
+                            'arn': element.Endpoint
+                        };
+                        items.push(item.arn);
+                    }
+                }, this);
+            callback(err, items);
+        });
     }
 
     listSubscriptionsByTopic(snsURL, callback) {
