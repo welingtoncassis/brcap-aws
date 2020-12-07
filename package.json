@@ -4,7 +4,7 @@
   "description": "Projeto responsável por abstrair algumas funcionalidades da sdk aws, auxiliando equipes iniciantes na plataforma.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -20,10 +20,13 @@
   },
   "homepage": "https://github.com/brasilcap/brcap-aws#readme",
   "dependencies": {
-    "aws-sdk": "2.176.0",
+    "aws-sdk": "^2.804.0",
     "forEachAsync": "^3.0.0",
     "redis": "^2.8.0",
     "redis-clustr": "^1.6.0",
     "tiny-json-http": "^7.0.0"
+  },
+  "devDependencies": {
+    "jest": "^26.6.3"
   }
 }
