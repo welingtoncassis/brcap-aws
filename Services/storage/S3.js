@@ -1,28 +1,34 @@
 // Load the AWS SDK for Node.js
-var AWS = require('aws-sdk');
-
-var s3;
+const AWS = require('aws-sdk');
 
 module.exports = class S3 {
 
-    constructor() {
-        this.s3 = new AWS.S3();
+    constructor(config = {}) {
+        this.options = {
+            ...config,
+            ...(
+                config.endpoint
+                && { endpoint: new AWS.Endpoint(config.endpoint) }
+            )
+        };
+        this.s3 = new AWS.S3(this.options);
     }
 
-    get(bucket, key, callback) {
+    async get(bucket, key) {
         if (bucket === undefined || bucket === null || bucket === '') {
-            callback("bucket missing or in a invalid state.", null);
-        } else if (key === undefined || key === null || key === '') {
-            callback("key missing or in a invalid state.", null);
-        } else {
-            var params = {
-                Bucket: bucket,
-                Key: key
-            };
-            this.s3.getObject(params, function (err, data) {
-                callback(err, data);
-            });
+            throw new Error("bucket missing or in a invalid state.");
         }
+        if (key === undefined || key === null || key === '') {
+            throw new Error("key missing or in a invalid state.");
+        }
+        var params = {
+            Bucket: bucket,
+            Key: key,
+            ResponseContentType: 'application/json'
+        };
+        const s3 = await this.s3.getObject(params).promise()
+        const result = JSON.parse(s3.Body);
+        return result
     }
 
     put(bucket, key, param, callback) {

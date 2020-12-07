@@ -5,6 +5,12 @@ var S3 = require("./Services/storage/S3");
 var Dynamo = require("./Services/DataBase/DynamoDB");
 var KMS = require("./Services/secret/Kms");
 
+// TODO INSTANCIAR UMA UNICA VEZ (s3Get)
+// TODO REPLICAR AS MELHORIAS NA API DO S3
+// TODO CALLBACK TO PROMISE (SNS, SQS, Dynamo, KMS)
+// TODO MELHORAR A UTILIZACAO DA API PASSANDO OBJ DE CONFIG(SNS, SQS, Dynamo, KMS)
+// TODO INSTANCIAR UM UNICA VEZ (SNS, SQS, Dynamo, KMS)
+
 const {
   getIndex,
   putIndex,
@@ -85,10 +91,8 @@ exports.Redis_Delete = function(key, host, port, callback) {
   });
 };
 
-exports.S3_Get = function(bucket, key, callback) {
-  new S3().get(bucket, key, function(err, data) {
-    callback(err, data);
-  });
+exports.s3Get = async function s3Get(bucket, key) {
+  return new S3().get(bucket, key);
 };
 
 exports.S3_Put = function(bucket, key, param, callback) {
